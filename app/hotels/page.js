@@ -1,6 +1,11 @@
 export default async function HotelsPage() {
   // Fetch hotels from our API
-  const res = await fetch('http://localhost:3000/api/hotels', {
+  const baseUrl = process.env.VERCEL_URL 
+  ? `https://${process.env.VERCEL_URL}` 
+  : 'http://localhost:3000'
+  
+const res = await fetch(`${baseUrl}/api/hotels`,
+{
     cache: 'no-store'
   })
   const hotels = await res.json()
