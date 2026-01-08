@@ -1,71 +1,137 @@
-import { list } from '@vercel/blob'
+'use client'
 
-export const revalidate = 0 // Don't cache this page
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-export default async function HotelsPage() {
-  let hotels = []
-  
-  try {
-    // Get hotels from Blob storage
-    const { blobs } = await list()
-    const hotelsBlob = blobs.find(b => b.pathname === 'hotels.json')
+export default function AddHotelPage() {
+  const router = useRouter()
+  const [formData, setFormData] = useState({
+    name: '',
+    city: '',
+    state: '',
+    rating: 5,
+    has24HourCheckin: false,
+    hasBlackoutCurtains: false,
+    noiseLevel: 'Quiet'
+  })
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
     
-    if (hotelsBlob) {
-      const response = await fetch(hotelsBlob.url)
-      hotels = await response.json()
-    }
-  } catch (error) {
-    console.error('Error loading hotels:', error)
-  }
-  
-  // Show sample data if no hotels yet
-  if (hotels.length === 0) {
-    hotels = [
-      {
-        id: '1',
-        name: 'Hilton Garden Inn - Airport',
-        city: 'Dallas',
-        state: 'TX',
-        rating: 4.5,
-        has24HourCheckin: true,
-        hasBlackoutCurtains: true,
-        noiseLevel: 'Quiet'
+    try {
+      const response = await fetch('/api/hotels/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      
+      if (response.ok) {
+        alert('Hotel saved successfully!')
+        router.push('/hotels')
+      } else {
+        alert('Error saving hotel')
       }
-    ]
+    } catch (error) {
+      alert('Error: ' + error.message)
+    }
   }
 
   return (
     <main className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold text-blue-600 mb-8">Hotels</h1>
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-4xl font-bold text-blue-600 mb-8">Add Hotel</h1>
         
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {hotels.map((hotel) => (
-            <div key={hotel.id} className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-bold mb-2">{hotel.name}</h2>
-              <p className="text-gray-600 mb-4">{hotel.city}, {hotel.state}</p>
-              
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <span>Rating:</span>
-                  <span className="font-semibold">{hotel.rating}/5</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>24hr Check-in:</span>
-                  <span>{hotel.has24HourCheckin ? '✓' : '✗'}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Blackout Curtains:</span>
-                  <span>{hotel.hasBlackoutCurtains ? '✓' : '✗'}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>Noise Level:</span>
-                  <span>{hotel.noiseLevel}</span>
-                </div>
-              </div>
+        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">Hotel Name</label>
+            <input
+              type="text"
+              required
+              className="w-full border rounded p-2"
+              value={formData.name}
+              onChange={(e) => setFormData({...formData, name: e.target.value})}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">City</label>
+              <input
+                type="text"
+                required
+                className="w-full border rounded p-2"
+                value={formData.city}
+                onChange={(e) => setFormData({...formData, city: e.target.value})}
+              />
             </div>
-          ))}
-        </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">State</label>
+              <input
+                type="text"
+                required
+                maxLength="2"
+                className="w-full border rounded p-2"
+                value={formData.state}
+                onChange={(e) => setFormData({...formData, state: e.target.value.toUpperCase()})}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Rating (1-5)</label>
+            <input
+              type="number"
+              min="1"
+              max="5"
+              step="0.5"
+              className="w-full border rounded p-2"
+              value={formData.rating}
+              onChange={(e) => setFormData({...formData, rating: parseFloat(e.target.value)})}
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={formData.has24HourCheckin}
+                onChange={(e) => setFormData({...formData, has24HourCheckin: e.target.checked})}
+              />
+              <span>24-Hour Check-in Available</span>
+            </label>
+          </div>
+
+          <div>
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={formData.hasBlackoutCurtains}
+                onChange={(e) => setFormData({...formData, hasBlackoutCurtains: e.target.checked})}
+              />
+              <span>Blackout Curtains</span>
+            </label>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Noise Level</label>
+            <select
+              className="w-full border rounded p-2"
+              value={formData.noiseLevel}
+              onChange={(e) => setFormData({...formData, noiseLevel: e.target.value})}
+            >
+              <option>Quiet</option>
+              <option>Moderate</option>
+              <option>Loud</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white rounded py-3 font-semibold hover:bg-blue-700"
+          >
+            Add Hotel
+          </button>
+        </form>
       </div>
     </main>
   )
