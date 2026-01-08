@@ -1,28 +1,38 @@
-export default function HotelsPage() {
-  const hotels = [
-    {
-      id: '1',
-      name: 'Hilton Garden Inn - Airport',
-      city: 'Dallas',
-      state: 'TX',
-      rating: 4.5,
-      crewFriendly: true,
-      has24HourCheckin: true,
-      hasBlackoutCurtains: true,
-      noiseLevel: 'Quiet'
-    },
-    {
-      id: '2',
-      name: 'Courtyard Marriott',
-      city: 'Phoenix',
-      state: 'AZ',
-      rating: 4.0,
-      crewFriendly: true,
-      has24HourCheckin: false,
-      hasBlackoutCurtains: true,
-      noiseLevel: 'Moderate'
+import { list } from '@vercel/blob'
+
+export const revalidate = 0 // Don't cache this page
+
+export default async function HotelsPage() {
+  let hotels = []
+  
+  try {
+    // Get hotels from Blob storage
+    const { blobs } = await list()
+    const hotelsBlob = blobs.find(b => b.pathname === 'hotels.json')
+    
+    if (hotelsBlob) {
+      const response = await fetch(hotelsBlob.url)
+      hotels = await response.json()
     }
-  ]
+  } catch (error) {
+    console.error('Error loading hotels:', error)
+  }
+  
+  // Show sample data if no hotels yet
+  if (hotels.length === 0) {
+    hotels = [
+      {
+        id: '1',
+        name: 'Hilton Garden Inn - Airport',
+        city: 'Dallas',
+        state: 'TX',
+        rating: 4.5,
+        has24HourCheckin: true,
+        hasBlackoutCurtains: true,
+        noiseLevel: 'Quiet'
+      }
+    ]
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 p-8">
