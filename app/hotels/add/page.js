@@ -16,11 +16,24 @@ export default function AddHotelPage() {
   })
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    // For now, just log it - we'll save to Blob storage next
-    console.log('New hotel:', formData)
-    alert('Hotel added! (Not saved yet - we will add storage next)')
-    router.push('/hotels')
+  e.preventDefault()
+  
+  try {
+    const response = await fetch('/api/hotels/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+    
+    if (response.ok) {
+      alert('Hotel saved successfully!')
+      router.push('/hotels')
+    } else {
+      alert('Error saving hotel')
+    }
+  } catch (error) {
+    alert('Error: ' + error.message)
+  }
   }
 
   return (
