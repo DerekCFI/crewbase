@@ -129,10 +129,8 @@ export default function AddReviewPage({ params }) {
       
       if (response.ok) {
         alert('Review submitted successfully!')
-        router.refresh()
-        setTimeout(() => {
-          router.push(`/${businessType}s/${businessId}`)
-        }, 100)
+        // Force a hard page reload instead of client-side navigation
+        window.location.href = `/${businessType}s/${businessId}`
       } else {
         alert('Error submitting review')
       }
