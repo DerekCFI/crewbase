@@ -1,29 +1,23 @@
 import { list } from '@vercel/blob'
 import Link from 'next/link'
+import { neon } from '@neondatabase/serverless'
 export const dynamic = 'force-dynamic'
 
 export const revalidate = 0
 
 async function getReviews(businessId) {
   try {
-    const { blobs } = await list()
-    const reviewsBlob = blobs.find(b => b.pathname === 'reviews.json')
-    
-    if (reviewsBlob) {
-      const response = await fetch(reviewsBlob.url, { 
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' }
-      })
-      
-      if (response.ok) {
-        const allReviews = await response.json()
-        return allReviews.filter(r => r.businessType === 'rental' && r.businessId === businessId)
-      }
-    }
+    const sql = neon(process.env.DATABASE_URL)
+    const reviews = await sql`
+      SELECT * FROM reviews 
+      WHERE business_type = 'rental' AND business_id = ${businessId}
+      ORDER BY created_at DESC
+    `
+    return reviews
   } catch (error) {
     console.error('Error loading reviews:', error)
+    return []
   }
-  return []
 }
 
 export default async function RentalDetailPage({ params }) {

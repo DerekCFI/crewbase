@@ -1,39 +1,54 @@
-import { put, list, del } from '@vercel/blob'
+import { neon } from '@neondatabase/serverless'
 import { NextResponse } from 'next/server'
 
 export async function POST(request) {
   try {
-    const newReview = await request.json()
+    const review = await request.json()
     
-    newReview.id = Date.now().toString()
+    const sql = neon(process.env.DATABASE_URL)
     
-    let reviews = []
-    let oldBlobUrl = null
+    // Insert the review into Postgres
+    const result = await sql`
+      INSERT INTO reviews (
+        business_type,
+        business_id,
+        business_name,
+        overall_rating,
+        review_text,
+        cleanliness_rating,
+        staff_rating,
+        value_rating,
+        service_rating,
+        facilities_rating,
+        food_quality_rating,
+        service_speed_rating,
+        vehicle_quality_rating,
+        customer_service_rating,
+        created_at
+      ) VALUES (
+        ${review.businessType},
+        ${review.businessId},
+        ${review.businessName},
+        ${review.overallRating},
+        ${review.reviewText},
+        ${review.cleanlinessRating || null},
+        ${review.staffRating || null},
+        ${review.valueRating || null},
+        ${review.serviceRating || null},
+        ${review.facilitiesRating || null},
+        ${review.foodQualityRating || null},
+        ${review.serviceSpeedRating || null},
+        ${review.vehicleQualityRating || null},
+        ${review.customerServiceRating || null},
+        ${review.createdAt}
+      )
+      RETURNING id
+    `
     
-    try {
-      const { blobs } = await list()
-      const reviewsBlob = blobs.find(b => b.pathname === 'reviews.json')
-      if (reviewsBlob) {
-        oldBlobUrl = reviewsBlob.url
-        const response = await fetch(reviewsBlob.url)
-        reviews = await response.json()
-      }
-    } catch (error) {
-      console.log('No existing reviews file')
-    }
-    
-    reviews.push(newReview)
-    
-    if (oldBlobUrl) {
-      await del(oldBlobUrl)
-    }
-    
-    await put('reviews.json', JSON.stringify(reviews, null, 2), {
-      access: 'public',
-      contentType: 'application/json',
+    return NextResponse.json({ 
+      success: true, 
+      review: { ...review, id: result[0].id }
     })
-    
-    return NextResponse.json({ success: true, review: newReview })
   } catch (error) {
     console.error('Error saving review:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

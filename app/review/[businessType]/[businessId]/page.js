@@ -131,10 +131,9 @@ export default function AddReviewPage({ params }) {
       })
       
       if (response.ok) {
-        // Wait 3 seconds to let blob storage sync
-        await new Promise(resolve => setTimeout(resolve, 3000))
-        // Force a hard page reload
+        // Postgres is instant - no wait needed!
         window.location.href = `/${businessType}s/${businessId}`
+      }
       } else {
         alert('Error submitting review')
         setSubmitting(false)
