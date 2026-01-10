@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface Airport {
@@ -20,28 +20,13 @@ export default function SearchBar({ variant = 'homepage', onClose }: SearchBarPr
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Airport[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [showResults, setShowResults] = useState(false)
   const router = useRouter()
-  const searchRef = useRef<HTMLDivElement>(null)
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowResults(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   // Search airports as user types
   useEffect(() => {
     const searchAirports = async () => {
       if (query.length < 2) {
         setResults([])
-        setShowResults(false)
         return
       }
 
@@ -50,7 +35,6 @@ export default function SearchBar({ variant = 'homepage', onClose }: SearchBarPr
         const response = await fetch(`/api/search/airports?q=${encodeURIComponent(query)}`)
         const data = await response.json()
         setResults(data.airports || [])
-        setShowResults(true)
       } catch (error) {
         console.error('Search error:', error)
         setResults([])
@@ -66,13 +50,13 @@ export default function SearchBar({ variant = 'homepage', onClose }: SearchBarPr
   const handleSelectAirport = (airport: Airport) => {
     router.push(`/search?airport=${airport.iata}`)
     setQuery('')
-    setShowResults(false)
+    setResults([])
     if (onClose) onClose()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
-      setShowResults(false)
+      setResults([])
       if (onClose) onClose()
     }
   }
@@ -80,7 +64,7 @@ export default function SearchBar({ variant = 'homepage', onClose }: SearchBarPr
   const isHeader = variant === 'header'
 
   return (
-    <div ref={searchRef} className={`relative ${isHeader ? 'w-full' : ''}`}>
+    <div className={`relative ${isHeader ? 'w-full' : ''}`}>
       {!isHeader && (
         <div className="mb-4 text-center">
           <p className="text-gray-600 text-sm md:text-base">
@@ -98,6 +82,13 @@ export default function SearchBar({ variant = 'homepage', onClose }: SearchBarPr
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => {
+            // Re-show results if there's a query
+            if (query.length >= 2) {
+              // Trigger search again
+              setQuery(query)
+            }
+          }}
           placeholder={isHeader ? "Search airports..." : "Try ATL, KATL, or Atlanta..."}
           className={`w-full px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 ${
             isHeader ? 'py-2 text-sm' : 'py-4 text-lg'
@@ -111,18 +102,18 @@ export default function SearchBar({ variant = 'homepage', onClose }: SearchBarPr
           </div>
         )}
 
-        {/* Autocomplete dropdown */}
-        {showResults && results.length > 0 && (
-          <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+        {/* Autocomplete dropdown - always show if there are results */}
+        {results.length > 0 && query.length >= 2 && (
+          <div className="absolute z-[9999] w-full mt-2 bg-white border-2 border-blue-500 rounded-lg shadow-2xl max-h-96 overflow-y-auto">
             {results.map((airport) => (
               <button
                 key={airport.iata}
                 onClick={() => handleSelectAirport(airport)}
-                className="w-full text-left px-4 py-3 hover:bg-gray-100 border-b border-gray-100 last:border-b-0 transition-colors"
+                className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-semibold text-gray-900">
+                    <div className="font-bold text-lg text-gray-900">
                       {airport.iata} / {airport.icao}
                     </div>
                     <div className="text-sm text-gray-600">
@@ -133,7 +124,7 @@ export default function SearchBar({ variant = 'homepage', onClose }: SearchBarPr
                     </div>
                   </div>
                   <svg 
-                    className="w-5 h-5 text-gray-400" 
+                    className="w-5 h-5 text-blue-500" 
                     fill="none" 
                     strokeLinecap="round" 
                     strokeLinejoin="round" 
@@ -149,8 +140,8 @@ export default function SearchBar({ variant = 'homepage', onClose }: SearchBarPr
           </div>
         )}
 
-        {showResults && results.length === 0 && query.length >= 2 && !isLoading && (
-          <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-center text-gray-500">
+        {results.length === 0 && query.length >= 2 && !isLoading && (
+          <div className="absolute z-[9999] w-full mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-xl p-4 text-center text-gray-500">
             No airports found matching "{query}"
           </div>
         )}
