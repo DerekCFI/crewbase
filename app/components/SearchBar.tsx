@@ -29,15 +29,12 @@ export default function SearchBar({ variant = 'homepage', onClose }: SearchBarPr
     function handleClickOutside(event: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowResults(false)
-        if (variant === 'header' && onClose) {
-          onClose()
-        }
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [variant, onClose])
+  }, [])
 
   // Search airports as user types
   useEffect(() => {
@@ -76,9 +73,7 @@ export default function SearchBar({ variant = 'homepage', onClose }: SearchBarPr
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       setShowResults(false)
-      if (variant === 'header' && onClose) {
-        onClose()
-      }
+      if (onClose) onClose()
     }
   }
 

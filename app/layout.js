@@ -17,6 +17,8 @@ export default function RootLayout({ children }) {
               CrewBase
             </Link>
             <div className="flex items-center gap-6">
+              <HeaderSearch />
+              
               <Link href="/hotels" className="hover:underline">
                 Hotels
               </Link>
@@ -33,8 +35,6 @@ export default function RootLayout({ children }) {
               <Link href="/add" className="bg-white text-blue-600 px-4 py-2 rounded font-semibold hover:bg-gray-100">
                 + Add Location
               </Link>
-
-              <HeaderSearch />
             </div>
           </div>
         </nav>
