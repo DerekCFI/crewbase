@@ -1,6 +1,8 @@
 import './globals.css'
 import Link from 'next/link'
 import HeaderSearch from './components/HeaderSearch'
+import MobileMenu from './components/MobileMenu'
+import Footer from './components/Footer'
 
 export const metadata = {
   title: 'CrewBase',
@@ -10,13 +12,15 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+      <body className="flex flex-col min-h-screen">
         <nav className="bg-blue-600 text-white p-4">
           <div className="max-w-6xl mx-auto flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold">
               CrewBase
             </Link>
-            <div className="flex items-center gap-6">
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-6">
               <HeaderSearch />
               
               <Link href="/hotels" className="hover:underline">
@@ -36,9 +40,19 @@ export default function RootLayout({ children }) {
                 + Add Location
               </Link>
             </div>
+
+            {/* Mobile Menu */}
+            <div className="md:hidden">
+              <MobileMenu />
+            </div>
           </div>
         </nav>
-        {children}
+        
+        <main className="flex-grow">
+          {children}
+        </main>
+
+        <Footer />
       </body>
     </html>
   )
