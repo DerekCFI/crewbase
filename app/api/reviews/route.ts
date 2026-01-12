@@ -27,6 +27,36 @@ import { neon } from '@neondatabase/serverless'
  * ALTER TABLE reviews ADD COLUMN gluten_free_options BOOLEAN;
  */
 
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const category = searchParams.get('category')
+    
+    if (!category) {
+      return NextResponse.json(
+        { error: 'Category is required' },
+        { status: 400 }
+      )
+    }
+
+    const sql = neon(process.env.DATABASE_URL!)
+    
+    const reviews = await sql`
+      SELECT * FROM reviews 
+      WHERE category = ${category}
+      ORDER BY created_at DESC
+    `
+
+    return NextResponse.json({ reviews })
+  } catch (error) {
+    console.error('Error fetching reviews:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch reviews' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()
