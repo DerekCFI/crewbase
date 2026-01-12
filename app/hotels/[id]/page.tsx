@@ -46,7 +46,7 @@ interface Review {
 }
 
 export default function HotelDetailPage() {
-  const params = useParams()
+  const params = useParams() as { id: string }
   const router = useRouter()
   const [review, setReview] = useState<Review | null>(null)
   const [isLoading, setIsLoading] = useState(true)
