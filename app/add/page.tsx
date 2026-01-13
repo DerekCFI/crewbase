@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import StarRating from '../components/StarRating'
 import PriceRating from '../components/PriceRating'
 import PlacesAutocomplete from '../components/PlacesAutocomplete'
 
 export default function AddLocationPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [formData, setFormData] = useState({
     // Universal fields
     category: '',
@@ -203,6 +204,23 @@ export default function AddLocationPage() {
     // Update the ref to the current category
     prevCategoryRef.current = formData.category
   }, [formData.category])
+
+  // Auto-fill form from URL parameters on mount
+  useEffect(() => {
+    const category = searchParams.get('category')
+    const name = searchParams.get('name')
+    const address = searchParams.get('address')
+
+    // Only auto-fill if at least one parameter is present
+    if (category || name || address) {
+      setFormData(prev => ({
+        ...prev,
+        ...(category && { category }),
+        ...(name && { locationName: name }),
+        ...(address && { address })
+      }))
+    }
+  }, []) // Empty dependency array - only run once on mount
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

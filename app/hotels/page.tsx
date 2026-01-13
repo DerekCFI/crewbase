@@ -4,38 +4,42 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Filters, { FilterValues } from '../components/Filters'
 
-interface Review {
-  id: number
+interface Business {
+  business_slug: string
   location_name: string
   address: string
   airport_code: string
-  overall_rating: number
-  review_text: string
-  created_at: string
-  would_recommend: boolean
-  crew_recognition: boolean
-  shuttle_service: boolean
-  fitness_center: boolean
-  breakfast: string
-  wifi_quality: number
+  latitude: number
+  longitude: number
+  review_count: number
+  avg_rating: number
+  latest_review_date: string
+  has_recommendations: boolean
+  recent_reviews: Array<{
+    id: number
+    review_text: string
+    overall_rating: number
+    would_recommend: boolean
+    created_at: string
+  }>
 }
 
 export default function HotelsPage() {
   const [filters, setFilters] = useState<FilterValues>({})
-  const [reviews, setReviews] = useState<Review[]>([])
+  const [businesses, setBusinesses] = useState<Business[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string>('')
 
   useEffect(() => {
-    fetchReviews()
+    fetchBusinesses()
   }, [])
 
-  const fetchReviews = async () => {
+  const fetchBusinesses = async () => {
     try {
-      const response = await fetch('/api/reviews?category=hotels')
-      if (!response.ok) throw new Error('Failed to fetch reviews')
+      const response = await fetch('/api/businesses?category=hotels')
+      if (!response.ok) throw new Error('Failed to fetch hotels')
       const data = await response.json()
-      setReviews(data.reviews || [])
+      setBusinesses(data.businesses || [])
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -80,7 +84,7 @@ export default function HotelsPage() {
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold text-gray-900 mb-6">Hotels</h1>
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            Error loading reviews: {error}
+            Error loading hotels: {error}
           </div>
         </div>
       </div>
@@ -105,27 +109,28 @@ export default function HotelsPage() {
 
         <Filters onFilterChange={handleFilterChange} />
 
-        {reviews.length === 0 ? (
+        {businesses.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <p className="text-gray-500">No hotels listed yet. Be the first to add one!</p>
           </div>
         ) : (
           <div className="space-y-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+            {businesses.map((business) => (
+              <div key={business.business_slug} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                      {review.location_name}
+                      {business.location_name}
                     </h2>
-                    <p className="text-gray-600 text-sm mb-2">{review.address}</p>
-                    <p className="text-blue-600 font-semibold">Airport: {review.airport_code}</p>
+                    <p className="text-gray-600 text-sm mb-2">{business.address}</p>
+                    <p className="text-blue-600 font-semibold">Airport: {business.airport_code}</p>
                   </div>
                   <div className="flex flex-col items-end">
                     <div className="flex items-center gap-1 mb-2">
-                      {renderStars(review.overall_rating)}
+                      {renderStars(Math.round(business.avg_rating))}
+                      <span className="ml-2 text-sm text-gray-600">({business.review_count} {business.review_count === 1 ? 'review' : 'reviews'})</span>
                     </div>
-                    {review.would_recommend && (
+                    {business.has_recommendations && (
                       <span className="bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">
                         ✓ Recommended
                       </span>
@@ -133,38 +138,19 @@ export default function HotelsPage() {
                   </div>
                 </div>
 
-                <p className="text-gray-700 mb-4 line-clamp-3">{review.review_text}</p>
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {review.crew_recognition && (
-                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                      Crew Rates
-                    </span>
-                  )}
-                  {review.shuttle_service && (
-                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                      Shuttle Service
-                    </span>
-                  )}
-                  {review.fitness_center && (
-                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                      Fitness Center
-                    </span>
-                  )}
-                  {review.breakfast && review.breakfast !== 'not-available' && (
-                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                      Breakfast
-                    </span>
-                  )}
-                </div>
+                {business.recent_reviews && business.recent_reviews.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-gray-700 line-clamp-3">{business.recent_reviews[0].review_text}</p>
+                  </div>
+                )}
 
                 <div className="flex justify-between items-center text-sm text-gray-500">
-                  <span>Reviewed {new Date(review.created_at).toLocaleDateString()}</span>
+                  <span>Latest review: {new Date(business.latest_review_date).toLocaleDateString()}</span>
                   <Link
-                    href={`/hotels/${review.id}`}
+                    href={`/hotels/${business.business_slug}`}
                     className="text-blue-600 hover:text-blue-800 font-semibold"
                   >
-                    View Full Review →
+                    View All Reviews →
                   </Link>
                 </div>
               </div>

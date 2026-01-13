@@ -46,7 +46,7 @@ interface Review {
 }
 
 export default function HotelDetailPage() {
-  const params = useParams() as { id: string }
+  const params = useParams() as { slug: string; id: string }
   const router = useRouter()
   const [review, setReview] = useState<Review | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -61,7 +61,7 @@ export default function HotelDetailPage() {
       const response = await fetch(`/api/reviews/${params.id}`)
       if (!response.ok) {
         if (response.status === 404) {
-          setError('Hotel not found')
+          setError('FBO not found')
         } else {
           throw new Error('Failed to fetch review')
         }
@@ -98,6 +98,36 @@ export default function HotelDetailPage() {
     return value.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
   }
 
+  const formatBreakfast = (value: string) => {
+    const breakfastLabels: { [key: string]: string } = {
+      'included': 'Breakfast: Included in room rate',
+      'purchase': 'Breakfast: Available for purchase',
+      'complimentary-continental': 'Breakfast: Complimentary continental',
+      'not-available': 'Breakfast: Not available'
+    }
+    return breakfastLabels[value] || `Breakfast: ${formatLabel(value)}`
+  }
+
+  const formatLaundry = (value: string) => {
+    const laundryLabels: { [key: string]: string } = {
+      'in-room': 'Self-Service Laundry: In-Room',
+      'free-on-site': 'Self-Service Laundry: Free On-Site',
+      'paid-on-site': 'Self-Service Laundry: Paid On-Site',
+      'nearby': 'Self-Service Laundry: Nearby',
+      'none': 'Self-Service Laundry: Not available'
+    }
+    return laundryLabels[value] || `Self-Service Laundry: ${formatLabel(value)}`
+  }
+
+  const formatCoffee = (value: string) => {
+    const coffeeLabels: { [key: string]: string } = {
+      'single-cup': 'In-Room Coffee: Single-cup machine (Keurig-style)',
+      'multi-cup': 'In-Room Coffee: Multi-cup machine (standard coffee maker)',
+      'none': 'In-Room Coffee: Not available'
+    }
+    return coffeeLabels[value] || `In-Room Coffee: ${formatLabel(value)}`
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -116,10 +146,10 @@ export default function HotelDetailPage() {
       <div className="min-h-screen bg-gray-50 py-8 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error || 'Hotel not found'}
+            {error || 'FBO not found'}
           </div>
-          <Link href="/hotels" className="text-blue-600 hover:text-blue-800">
-            ← Back to Hotels
+          <Link href={`/fbos/${params.slug}`} className="text-blue-600 hover:text-blue-800">
+            ← Back to FBO Reviews
           </Link>
         </div>
       </div>
@@ -130,8 +160,8 @@ export default function HotelDetailPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Back button */}
-        <Link href="/hotels" className="text-blue-600 hover:text-blue-800 mb-4 inline-block">
-          ← Back to Hotels
+        <Link href={`/fbos/${params.slug}`} className="text-blue-600 hover:text-blue-800 mb-4 inline-block">
+          ← Back to FBO Reviews
         </Link>
 
         {/* Header */}
@@ -285,9 +315,16 @@ export default function HotelDetailPage() {
                 <span className="text-green-600 text-xl">✓</span>
                 <div>
                   <p className="font-semibold text-gray-700">Breakfast</p>
-                  <p className="text-sm text-gray-600">{formatLabel(review.breakfast)}</p>
+                  <p className="text-sm">
+                    <span className="italic text-gray-600">
+                      {review.breakfast === 'included' && 'Included in room rate'}
+                      {review.breakfast === 'purchase' && 'Available for purchase'}
+                      {review.breakfast === 'complimentary-continental' && 'Complimentary continental'}
+                      {!['included', 'purchase', 'complimentary-continental'].includes(review.breakfast) && formatLabel(review.breakfast)}
+                    </span>
+                  </p>
                   {review.breakfast_start_time && (
-                    <p className="text-sm text-gray-500 mt-1">{review.breakfast_start_time}</p>
+                    <p className="text-sm text-gray-500 mt-1">Start Time: {review.breakfast_start_time}</p>
                   )}
                 </div>
               </div>
@@ -299,7 +336,13 @@ export default function HotelDetailPage() {
                 <span className="text-green-600 text-xl">✓</span>
                 <div>
                   <p className="font-semibold text-gray-700">In-Room Coffee</p>
-                  <p className="text-sm text-gray-600">{formatLabel(review.in_room_coffee)}</p>
+                  <p className="text-sm">
+                    <span className="italic text-gray-600">
+                      {review.in_room_coffee === 'single-cup' && 'Single-cup machine (Keurig-style)'}
+                      {review.in_room_coffee === 'multi-cup' && 'Multi-cup machine (standard coffee maker)'}
+                      {!['single-cup', 'multi-cup'].includes(review.in_room_coffee) && formatLabel(review.in_room_coffee)}
+                    </span>
+                  </p>
                 </div>
               </div>
             )}
@@ -318,7 +361,15 @@ export default function HotelDetailPage() {
                 <span className="text-green-600 text-xl">✓</span>
                 <div>
                   <p className="font-semibold text-gray-700">Self-Service Laundry</p>
-                  <p className="text-sm text-gray-600">{formatLabel(review.laundry_available)}</p>
+                  <p className="text-sm">
+                    <span className="italic text-gray-600">
+                      {review.laundry_available === 'in-room' && 'In-Room'}
+                      {review.laundry_available === 'free-on-site' && 'Free On-Site'}
+                      {review.laundry_available === 'paid-on-site' && 'Paid On-Site'}
+                      {review.laundry_available === 'nearby' && 'Nearby'}
+                      {!['in-room', 'free-on-site', 'paid-on-site', 'nearby'].includes(review.laundry_available) && formatLabel(review.laundry_available)}
+                    </span>
+                  </p>
                 </div>
               </div>
             )}
