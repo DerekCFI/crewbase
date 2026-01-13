@@ -79,12 +79,21 @@ export async function POST(request: Request) {
 
     const sql = neon(process.env.DATABASE_URL!)
 
+    // Generate business slug from location name
+    const businessSlug = body.locationName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special chars except spaces and hyphens
+      .replace(/\s+/g, '-')          // Replace spaces with hyphens
+      .replace(/-+/g, '-')           // Replace multiple hyphens with single
+      .trim()
+
     // Insert the review with all fields
     const result = await sql`
       INSERT INTO reviews (
         category,
         airport_code,
         location_name,
+        business_slug,
         address,
         phone,
         latitude,
@@ -160,6 +169,7 @@ export async function POST(request: Request) {
         ${body.category},
         ${body.airport.toUpperCase()},
         ${body.locationName},
+        ${businessSlug},
         ${body.address},
         ${body.phone || null},
         ${body.latitude || null},
