@@ -118,7 +118,7 @@ You can optionally drop these columns after ensuring no data needs to be migrate
 
 1. Run the SQL migration script in your Neon database console:
    ```
-   See: /workspaces/crewbase/migrations/add_form_fields.sql
+   See: /workspaces/crewintel/migrations/add_form_fields.sql
    ```
 
 2. Test the form:

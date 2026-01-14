@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* About */}
           <div>
-            <h3 className="text-xl font-bold mb-4">CrewBase</h3>
+            <h3 className="text-xl font-bold mb-4">CrewIntel</h3>
             <p className="text-gray-400 text-sm">
               Your crew's guide to the best travel services at airports across the United States.
             </p>
@@ -69,7 +69,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-          <p>&copy; {currentYear} CrewBase. All rights reserved.</p>
+          <p>&copy; {currentYear} CrewIntel. All rights reserved.</p>
         </div>
       </div>
     </footer>

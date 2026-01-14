@@ -5,7 +5,7 @@ import MobileMenu from './components/MobileMenu'
 import Footer from './components/Footer'
 
 export const metadata = {
-  title: 'CrewBase',
+  title: 'CrewIntel',
   description: 'Your crew\'s guide to the best travel services',
 }
 
@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
         <nav className="bg-blue-600 text-white p-4">
           <div className="max-w-6xl mx-auto flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold">
-              CrewBase
+              CrewIntel
             </Link>
             
             {/* Desktop Navigation */}

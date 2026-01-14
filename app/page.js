@@ -7,7 +7,7 @@ export default function Home() {
       <div className="max-w-4xl mx-auto px-4 py-16 md:py-24">
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-            CrewBase
+            CrewIntel
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 mb-8">
             Your crew's guide to the best travel services
@@ -57,7 +57,7 @@ export default function Home() {
       <div className="bg-white py-16">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            Why Crews Choose CrewBase
+            Why Crews Choose CrewIntel
           </h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">

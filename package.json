@@ -1,9 +1,9 @@
 {
   "type": "module",
-  "name": "crewbase",
+  "name": "crewintel",
   "version": "0.1.0",
   "private": true,
-  "description": "CrewBase - Flight crew review platform",
+  "description": "CrewIntel - Flight crew review platform",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
