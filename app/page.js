@@ -6,7 +6,7 @@ export default function Home() {
       {/* Hero Section with Search */}
       <div className="max-w-4xl mx-auto px-4 py-16 md:py-24">
         <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'var(--font-work-sans)' }}>
             CrewIntel
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 mb-8">

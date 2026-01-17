@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* About */}
           <div>
-            <h3 className="text-xl font-bold mb-4">CrewIntel</h3>
+            <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'var(--font-work-sans)' }}>CrewIntel</h3>
             <p className="text-gray-400 text-sm">
               Your crew's guide to the best travel services at airports across the United States.
             </p>

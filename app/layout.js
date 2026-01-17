@@ -1,8 +1,15 @@
 import './globals.css'
+import { Work_Sans } from 'next/font/google'
 import Link from 'next/link'
 import HeaderSearch from './components/HeaderSearch'
 import MobileMenu from './components/MobileMenu'
 import Footer from './components/Footer'
+
+const workSans = Work_Sans({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-work-sans'
+})
 
 export const metadata = {
   title: 'CrewIntel',
@@ -12,10 +19,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="flex flex-col min-h-screen">
+      <body className={`flex flex-col min-h-screen ${workSans.variable}`}>
         <nav className="bg-blue-600 text-white p-4">
           <div className="max-w-6xl mx-auto flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold">
+            <Link href="/" className="text-2xl font-bold" style={{ fontFamily: 'var(--font-work-sans)' }}>
               CrewIntel
             </Link>
             
