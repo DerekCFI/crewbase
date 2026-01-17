@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Filters, { FilterValues } from '../components/Filters'
@@ -31,7 +31,7 @@ interface Business {
   }>
 }
 
-export default function RestaurantsPage() {
+function RestaurantsContent() {
   const searchParams = useSearchParams()
   const airportCode = searchParams.get('airport')
   const [filters, setFilters] = useState<FilterValues>({})
@@ -218,5 +218,17 @@ export default function RestaurantsPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function RestaurantsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 py-8 px-4 flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      </div>
+    }>
+      <RestaurantsContent />
+    </Suspense>
   )
 }
