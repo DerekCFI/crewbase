@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server'
 import { neon } from '@neondatabase/serverless'
+import { calculateDistance } from '@/app/lib/distance'
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
-    
+    const airport = searchParams.get('airport')
+
     if (!category) {
       return NextResponse.json(
         { error: 'Category is required' },
@@ -14,6 +16,29 @@ export async function GET(request: Request) {
     }
 
     const sql = neon(process.env.DATABASE_URL!)
+
+    // If airport parameter provided, look up airport coordinates
+    interface AirportCoords {
+      latitude: number
+      longitude: number
+      name: string
+      iata_code: string
+      icao_code: string
+    }
+    let airportCoords: AirportCoords | null = null
+    if (airport) {
+      const airportResult = await sql`
+        SELECT latitude, longitude, name, iata_code, icao_code
+        FROM airports
+        WHERE UPPER(iata_code) = ${airport.toUpperCase()}
+           OR UPPER(icao_code) = ${airport.toUpperCase()}
+        LIMIT 1
+      `
+      if (airportResult.length === 0) {
+        return NextResponse.json({ error: 'Airport not found' }, { status: 404 })
+      }
+      airportCoords = airportResult[0] as AirportCoords
+    }
 
     // Build category-specific amenity calculations
     let amenityFields = ''
@@ -70,9 +95,28 @@ export async function GET(request: Request) {
       ORDER BY latest_review_date DESC
     `
 
+    // If airport provided, filter businesses by distance and add distance field
+    let filteredBusinesses: Array<Record<string, unknown> & { distance_from_airport?: number }> = businesses
+    if (airportCoords) {
+      const airportLat = airportCoords.latitude
+      const airportLon = airportCoords.longitude
+      filteredBusinesses = businesses
+        .map(business => ({
+          ...business,
+          distance_from_airport: calculateDistance(
+            airportLat,
+            airportLon,
+            business.latitude as number,
+            business.longitude as number
+          )
+        }))
+        .filter(b => b.distance_from_airport! <= 30)
+        .sort((a, b) => a.distance_from_airport! - b.distance_from_airport!)
+    }
+
     // For each business, get 2 most recent review snippets
     const businessesWithReviews = await Promise.all(
-      businesses.map(async (business) => {
+      filteredBusinesses.map(async (business) => {
         const recentReviews = await sql`
           SELECT id, review_text, overall_rating, would_recommend, created_at
           FROM reviews
@@ -81,7 +125,7 @@ export async function GET(request: Request) {
           ORDER BY created_at DESC
           LIMIT 2
         `
-        
+
         return {
           ...business,
           recent_reviews: recentReviews

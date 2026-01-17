@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Filters, { FilterValues } from '../components/Filters'
 
@@ -18,6 +19,7 @@ interface Business {
   after_hours_pct: number
   fbo_delivery_pct: number
   crew_rates_pct: number
+  distance_from_airport?: number
   recent_reviews: Array<{
     id: number
     review_text: string
@@ -28,6 +30,8 @@ interface Business {
 }
 
 export default function RentalsPage() {
+  const searchParams = useSearchParams()
+  const airportCode = searchParams.get('airport')
   const [filters, setFilters] = useState<FilterValues>({})
   const [businesses, setBusinesses] = useState<Business[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -35,11 +39,15 @@ export default function RentalsPage() {
 
   useEffect(() => {
     fetchBusinesses()
-  }, [])
+  }, [airportCode])
 
   const fetchBusinesses = async () => {
     try {
-      const response = await fetch('/api/businesses?category=rentals')
+      let url = '/api/businesses?category=rentals'
+      if (airportCode) {
+        url += `&airport=${encodeURIComponent(airportCode)}`
+      }
+      const response = await fetch(url)
       if (!response.ok) throw new Error('Failed to fetch car rentals')
       const data = await response.json()
       setBusinesses(data.businesses || [])
@@ -135,6 +143,11 @@ export default function RentalsPage() {
                       </h2>
                     </Link>
                     <p className="text-gray-600 text-sm mb-2">{business.address}</p>
+                    {business.distance_from_airport !== undefined && (
+                      <p className="text-sm text-gray-500 mb-2">
+                        {business.distance_from_airport} miles from {airportCode?.toUpperCase()}
+                      </p>
+                    )}
                     <p className="text-blue-600 font-semibold">Airport: {business.airport_code}</p>
                   </div>
                   <div className="flex flex-col items-end">
