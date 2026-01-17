@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { neon } from '@neondatabase/serverless'
-import { calculateHotelRating, calculateFBORating, calculateRestaurantRating, calculateRentalRating } from '@/lib/ratings'
+import { calculateHotelRating, calculateFBORating, calculateRestaurantRating, calculateRentalRating } from '../../lib/ratings'
 
 /*
  * Database Schema Updates:
